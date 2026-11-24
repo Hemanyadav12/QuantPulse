@@ -26,6 +26,7 @@ FastAPI Telemetry & Forecast API (api/main.py)
         │
         ▼
 Institutional 3-Zone Trading Terminal (frontend/)
+```
 Key Features
 Real-Time Data Ingestion (producers/): Streams live price ticks and financial news headlines for equities (AAPL, TSLA, NVDA) and cryptocurrencies (BTC-USD, ETH-USD) into Apache Kafka topics.
 
