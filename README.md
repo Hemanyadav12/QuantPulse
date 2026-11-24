@@ -27,24 +27,20 @@ FastAPI Telemetry & Forecast API (api/main.py)
         ▼
 Institutional 3-Zone Trading Terminal (frontend/)
 ```
-Key Features
-Real-Time Data Ingestion (producers/): Streams live price ticks and financial news headlines for equities (AAPL, TSLA, NVDA) and cryptocurrencies (BTC-USD, ETH-USD) into Apache Kafka topics.
 
-Distributed Stream Processing (streaming/): Uses Apache Spark Structured Streaming to compute rolling window metrics, score news sentiment with VADER NLP, and run real-time ML inference.
+## Key Features
+- **Real-Time Data Ingestion (producers/): Streams live price ticks and financial news headlines for equities (AAPL, TSLA, NVDA) and cryptocurrencies (BTC-USD, ETH-USD) into Apache Kafka topics.
+- **Distributed Stream Processing (streaming/): Uses Apache Spark Structured Streaming to compute rolling window metrics, score news sentiment with VADER NLP, and run real-time ML inference.
+- **Machine Learning Pipeline (ml/, models/): Trains and serves GBTRegressor (return magnitude) and LogisticRegression (directional signal & confidence probability) models via Spark MLlib.
+- **Low-Latency REST API (api/main.py): Exposes /api/market, /api/news, and /api/history endpoints backed by MongoDB (database/).
+- **3-Zone Unified Price Trajectory & Forecast UI (frontend/):**
+ - **Zone 1 (1M Historical Trend): 22-day calibrated historical close trajectory.
+ - **Zone 2 (Intraday & Live Stream): 8–10 hour 15-minute intraday baseline stitched seamlessly into live streaming quotes.
+ - **Zone 3 (48-Hour AI Forecast): 8-step (+6h to +48h (2D)) forward projection with a dynamic ±1σ confidence cone and interactive XY zoom/pan.
 
-Machine Learning Pipeline (ml/, models/): Trains and serves GBTRegressor (return magnitude) and LogisticRegression (directional signal & confidence probability) models via Spark MLlib.
+---
 
-Low-Latency REST API (api/main.py): Exposes /api/market, /api/news, and /api/history endpoints backed by MongoDB (database/).
-
-3-Zone Unified Price Trajectory & Forecast UI (frontend/):
-
-Zone 1 (1M Historical Trend): 22-day calibrated historical close trajectory.
-
-Zone 2 (Intraday & Live Stream): 8–10 hour 15-minute intraday baseline stitched seamlessly into live streaming quotes.
-
-Zone 3 (48-Hour AI Forecast): 8-step (+6h to +48h (2D)) forward projection with a dynamic ±1σ confidence cone and interactive XY zoom/pan.
-
-Repository Structure
+## Repository Structure
 
 ```text
 QuantPulse/
@@ -59,23 +55,30 @@ QuantPulse/
 ├── docker-compose.yml   # Kafka (KRaft) & MongoDB container orchestration
 └── requirements.txt     # Python dependencies
 ```
-Quick Start
-1. Start Infrastructure Services
+
+## Quick Start
+
+### 1. Start Infrastructure Services
 ```text
 docker-compose up -d
 ```
-2. Install Python Dependencies
+
+### 2. Install Python Dependencies
 ```text
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 ```
-3. Train ML Models (First-Time Setup)
+
+### 3. Train ML Models (First-Time Setup)
 ```text
 python ml/train_models.py
 ```
-4. Launch Streaming Pipeline, Producers & Web Terminal
+
+### 4. Launch Streaming Pipeline, Producers & Web Terminal
+
 Open separate terminals with .venv activated:
+
 ```text
 # Terminal 1: Start PySpark Structured Streaming processor
 spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.0 streaming/stream_processor.py
@@ -87,4 +90,5 @@ python producers/news_producer.py
 # Terminal 3: Start FastAPI server & frontend UI
 uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 ```
+
 Open http://localhost:8000 in your browser to view the terminal.
