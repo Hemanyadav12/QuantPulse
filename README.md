@@ -45,9 +45,8 @@ Zone 2 (Intraday & Live Stream): 8–10 hour 15-minute intraday baseline stitche
 Zone 3 (48-Hour AI Forecast): 8-step (+6h to +48h (2D)) forward projection with a dynamic ±1σ confidence cone and interactive XY zoom/pan.
 
 Repository Structure
-Plaintext
 
-
+```text
 QuantPulse/
 ├── api/                 # FastAPI backend server & REST endpoints
 ├── database/            # MongoDB connection & persistence helpers
@@ -59,30 +58,25 @@ QuantPulse/
 ├── streaming/           # PySpark Structured Streaming consumer & inference engine
 ├── docker-compose.yml   # Kafka (KRaft) & MongoDB container orchestration
 └── requirements.txt     # Python dependencies
+```
 Quick Start
 1. Start Infrastructure Services
-Bash
-
-
+```text
 docker-compose up -d
+```
 2. Install Python Dependencies
-Bash
-
-
+```text
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
+```
 3. Train ML Models (First-Time Setup)
-Bash
-
-
+```text
 python ml/train_models.py
+```
 4. Launch Streaming Pipeline, Producers & Web Terminal
 Open separate terminals with .venv activated:
-
-Bash
-
-
+```text
 # Terminal 1: Start PySpark Structured Streaming processor
 spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.0 streaming/stream_processor.py
 
@@ -92,4 +86,5 @@ python producers/news_producer.py
 
 # Terminal 3: Start FastAPI server & frontend UI
 uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+```
 Open http://localhost:8000 in your browser to view the terminal.
