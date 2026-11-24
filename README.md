@@ -29,14 +29,15 @@ Institutional 3-Zone Trading Terminal (frontend/)
 ```
 
 ## Key Features
-- **Real-Time Data Ingestion (producers/): Streams live price ticks and financial news headlines for equities (AAPL, TSLA, NVDA) and cryptocurrencies (BTC-USD, ETH-USD) into Apache Kafka topics.
-- **Distributed Stream Processing (streaming/): Uses Apache Spark Structured Streaming to compute rolling window metrics, score news sentiment with VADER NLP, and run real-time ML inference.
-- **Machine Learning Pipeline (ml/, models/): Trains and serves GBTRegressor (return magnitude) and LogisticRegression (directional signal & confidence probability) models via Spark MLlib.
-- **Low-Latency REST API (api/main.py): Exposes /api/market, /api/news, and /api/history endpoints backed by MongoDB (database/).
-- **3-Zone Unified Price Trajectory & Forecast UI (frontend/):**
- - **Zone 1 (1M Historical Trend): 22-day calibrated historical close trajectory.
- - **Zone 2 (Intraday & Live Stream): 8–10 hour 15-minute intraday baseline stitched seamlessly into live streaming quotes.
- - **Zone 3 (48-Hour AI Forecast): 8-step (+6h to +48h (2D)) forward projection with a dynamic ±1σ confidence cone and interactive XY zoom/pan.
+
+- **Real-Time Data Ingestion (`producers/`):** Streams live price ticks and financial news headlines for equities (`AAPL`, `TSLA`, `NVDA`) and cryptocurrencies (`BTC-USD`, `ETH-USD`) into Apache Kafka topics.
+- **Distributed Stream Processing (`streaming/`):** Uses Apache Spark Structured Streaming to compute rolling window metrics, score news sentiment with VADER NLP, and run real-time ML inference.
+- **Machine Learning Pipeline (`ml/`, `models/`):** Trains and serves `GBTRegressor` (return magnitude) and `LogisticRegression` (directional signal & confidence probability) models via Spark MLlib.
+- **Low-Latency REST API (`api/main.py`):** Exposes `/api/market`, `/api/news`, and `/api/history` endpoints backed by MongoDB (`database/`).
+- **3-Zone Unified Price Trajectory & Forecast UI (`frontend/`):**
+  - **Zone 1 (1M Historical Trend):** 22-day calibrated historical close trajectory.
+  - **Zone 2 (Intraday & Live Stream):** 8–10 hour 15-minute intraday baseline stitched seamlessly into live streaming quotes.
+  - **Zone 3 (48-Hour AI Forecast):** 8-step (`+6h` to `+48h (2D)`) forward projection with a dynamic `±1σ` confidence cone and interactive XY zoom/pan.
 
 ---
 
