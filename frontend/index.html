@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#050811" />
+  <title>QuantPulse | Institutional Quantitative Analytics & Trading Terminal</title>
+  
+  <!-- Typography: Inter for data UI headers and labels, JetBrains Mono for tabular numeric alignment -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/dist/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body class="terminal-body">
+  <!-- Subtle Ambient Glows -->
+  <div class="ambient-glow glow-cyan"></div>
+  <div class="ambient-glow glow-violet"></div>
+  <div class="ambient-glow glow-emerald"></div>
+
+  <!-- Command Header Bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <div class="logo-box">
+          <svg class="pulse-waveform-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="36" height="36" rx="8" fill="rgba(6, 182, 212, 0.08)" stroke="rgba(6, 182, 212, 0.35)" stroke-width="1.2" />
+            <path d="M4 18h5.5l3-9 4.5 19 4-14 3 7 2.5-3h5.5" stroke="#06b6d4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="waveform-path" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title-row">
+            <h1>QuantPulse</h1>
+            <span class="pro-tag">PRO</span>
+          </div>
+          <p class="brand-sub">Real-Time Market Intelligence & Alpha Terminal</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center/Right: Full Company Name Asset Switcher & Live Controls -->
+    <div class="topbar-right">
+      <div class="asset-selector-wrap">
+        <span class="control-label">ASSET</span>
+        <div class="segmented-pills" id="assetPills">
+          <button type="button" class="pill-btn active" data-symbol="AAPL">Apple</button>
+          <button type="button" class="pill-btn" data-symbol="TSLA">Tesla</button>
+          <button type="button" class="pill-btn" data-symbol="NVDA">Nvidia</button>
+          <button type="button" class="pill-btn" data-symbol="BTC-USD">Bitcoin</button>
+          <button type="button" class="pill-btn" data-symbol="ETH-USD">Ethereum</button>
+        </div>
+        <!-- Select element maintained for backend/test compatibility -->
+        <select id="symbolSelect" class="sr-only" aria-label="Select Asset">
+          <option value="AAPL" selected>Apple (AAPL)</option>
+          <option value="TSLA">Tesla (TSLA)</option>
+          <option value="NVDA">Nvidia (NVDA)</option>
+          <option value="BTC-USD">Bitcoin (BTC-USD)</option>
+          <option value="ETH-USD">Ethereum (ETH-USD)</option>
+        </select>
+      </div>
+
+      <div class="system-controls">
+        <div class="stream-status-badge">
+          <span class="heartbeat-pulse-container">
+            <span class="pulse-ring"></span>
+            <span class="pulse-core"></span>
+          </span>
+          <span class="stream-text mono">LIVE STREAM • 3s POLL</span>
+        </div>
+
+        <button type="button" id="pauseResumeBtn" class="action-btn" title="Pause or Resume Live Polling">
+          <svg class="btn-icon" id="pauseIcon" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M4.5 3a1 1 0 00-1 1v8a1 1 0 001 1h2a1 1 0 001-1V4a1 1 0 00-1-1h-2zm6 0a1 1 0 00-1 1v8a1 1 0 001 1h2a1 1 0 001-1V4a1 1 0 00-1-1h-2z" />
+          </svg>
+          <svg class="btn-icon hidden" id="playIcon" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M4.5 3.5a1 1 0 011.5-.866l7 4.5a1 1 0 010 1.732l-7 4.5A1 1 0 014.5 12.5v-9z" />
+          </svg>
+          <span id="pauseBtnText">Pause Sync</span>
+        </button>
+
+        <div class="sync-info">
+          <span id="lastSync" class="sync-badge mono">Connecting...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Terminal Workspace -->
+  <main class="terminal-container">
+    
+    <!-- 4-Column Glassmorphic Luminous KPI Containers -->
+    <section class="kpi-grid">
+      
+      <!-- Card 1: Live Asset Price -->
+      <div class="card kpi-card kpi-card-price">
+        <div class="corner-bracket cb-tl"></div>
+        <div class="corner-bracket cb-tr"></div>
+        <div class="kpi-header">
+          <span class="kpi-label">LIVE ASSET PRICE</span>
+          <span class="kpi-sub-badge mono">REAL-TIME QUOTE</span>
+        </div>
+        <div class="kpi-body">
+          <span id="kpiPrice" class="kpi-value mono">--</span>
+          <div class="kpi-delta-row">
+            <span id="kpiPriceDelta" class="delta-pill mono neutral">+0.00 / 0.00%</span>
+            <span class="delta-caption">vs previous tick</span>
+          </div>
+        </div>
+        <div class="kpi-footer-status">
+          <span class="spark-label">Window Volume:</span>
+          <span id="kpiVolume" class="mono text-cyan">--</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Predicted Return % -->
+      <div class="card kpi-card kpi-card-return">
+        <div class="corner-bracket cb-tl"></div>
+        <div class="corner-bracket cb-tr"></div>
+        <div class="kpi-header">
+          <span class="kpi-label">PREDICTED RETURN %</span>
+          <span class="model-badge violet-badge">Alpha Forecast</span>
+        </div>
+        <div class="kpi-body">
+          <span id="kpiReturn" class="kpi-value kpi-value-gradient mono">--</span>
+          <div class="kpi-sub-text">
+            <span class="sub-dot violet-dot"></span>
+            <span>Next-Horizon Forecast</span>
+          </div>
+        </div>
+        <div class="kpi-footer-status">
+          <span class="model-meta">Intraday Alpha Horizon</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Directional Signal & Confidence Gauge -->
+      <div class="card kpi-card kpi-card-direction">
+        <div class="corner-bracket cb-tl"></div>
+        <div class="corner-bracket cb-tr"></div>
+        <div class="kpi-header">
+          <span class="kpi-label">DIRECTIONAL SIGNAL</span>
+          <span class="model-badge cyan-badge">Momentum Classifier</span>
+        </div>
+        <div class="kpi-body direction-gauge-layout">
+          <div class="direction-left-col">
+            <div class="direction-signal-row">
+              <span id="kpiDirection" class="direction-badge neutral-badge">--</span>
+            </div>
+            <div class="confidence-label-group">
+              <span id="kpiConfidenceText" class="mono-confidence mono">--% CONF</span>
+              <span class="conf-sublabel">Model Probability</span>
+            </div>
+          </div>
+          <!-- SVG Confidence Gauge Meter with circular indicator and tick lines -->
+          <div class="gauge-meter-wrapper">
+            <svg class="confidence-gauge-svg" viewBox="0 0 72 72">
+              <defs>
+                <linearGradient id="gaugeGradUp" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#06b6d4" />
+                  <stop offset="100%" stop-color="#10b981" />
+                </linearGradient>
+                <linearGradient id="gaugeGradDown" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f59e0b" />
+                  <stop offset="100%" stop-color="#f43f5e" />
+                </linearGradient>
+              </defs>
+              <!-- Background Circle Track -->
+              <circle class="gauge-bg" cx="36" cy="36" r="28" stroke-width="4.5" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-dasharray="132 176" stroke-dashoffset="-22" stroke-linecap="round" />
+              <!-- Tick Marks Around Circle -->
+              <circle class="gauge-ticks" cx="36" cy="36" r="28" stroke-width="2" fill="none" stroke="rgba(148, 163, 184, 0.22)" stroke-dasharray="1 10" stroke-dashoffset="-22" />
+              <!-- Animated Progress Bar -->
+              <circle id="gaugeProgressArc" class="gauge-progress" cx="36" cy="36" r="28" stroke-width="4.8" fill="none" stroke="url(#gaugeGradUp)" stroke-dasharray="0 176" stroke-dashoffset="-22" stroke-linecap="round" />
+              <!-- Center Text / Icon -->
+              <text id="gaugeCenterText" x="36" y="39" text-anchor="middle" class="gauge-center-val mono">--%</text>
+            </svg>
+          </div>
+        </div>
+        <div class="confidence-subgradient-bar">
+          <div id="kpiConfidenceSubBar" class="subgradient-fill" style="width: 50%;"></div>
+        </div>
+      </div>
+
+      <!-- Card 4: Sentiment & Volatility Index with Sliding Spectrum Gauge -->
+      <div class="card kpi-card kpi-card-sentiment">
+        <div class="corner-bracket cb-tl"></div>
+        <div class="corner-bracket cb-tr"></div>
+        <div class="kpi-header">
+          <span class="kpi-label">SENTIMENT & VOLATILITY</span>
+          <span id="kpiMarketStatus" class="market-status-pill">24/7 ACTIVE</span>
+        </div>
+        <div class="kpi-body">
+          <div class="sentiment-val-row">
+            <span id="kpiSentiment" class="kpi-value-sm mono">--</span>
+            <span id="kpiSentimentTag" class="sentiment-pill-tag neutral">NEUTRAL</span>
+          </div>
+          <!-- Custom Sliding Spectrum Gauge with Tracking Dot -->
+          <div class="spectrum-gauge-wrap" title="VADER Spectrum (-1.0 to +1.0)">
+            <div class="spectrum-track">
+              <div class="spectrum-center-mark"></div>
+              <div id="sentimentTrackingDot" class="spectrum-tracking-dot" style="left: 50%;"></div>
+            </div>
+            <div class="spectrum-labels mono">
+              <span>-1.0 NEG</span>
+              <span>0.0</span>
+              <span>+1.0 POS</span>
+            </div>
+          </div>
+          <div id="kpiVolatility" class="kpi-sub-volatility mono">Volatility: --</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Primary Analytics Grid: Split-Window Price Chart (65%) & Alpha Return (35%) -->
+    <section class="primary-analytics-grid">
+      
+      <!-- Left 65%: Split-Window Price Area Chart (Recent Session Trend | Live Stream) -->
+      <div class="card chart-card price-chart-panel">
+        <div class="corner-bracket cb-tl"></div>
+        <div class="corner-bracket cb-tr"></div>
+        <div class="chart-header">
+          <div class="chart-header-left">
+            <div class="chart-title-wrap">
+              <span class="live-dot-mini"></span>
+              <h2 id="priceChartTitle">Apple Live Price Trajectory (USD)</h2>
+            </div>
+            <div class="chart-stat-badges">
+              <span class="stat-badge mono">Avg: <strong id="chartAvgPrice" class="text-cyan">--</strong></span>
+              <span class="stat-badge mono">High: <strong id="chartHighPrice" class="text-emerald">--</strong></span>
+              <span class="stat-badge mono">Low: <strong id="chartLowPrice" class="text-crimson">--</strong></span>
+              <button type="button" id="resetZoomBtn" class="reset-zoom-btn hidden" title="Reset Zoom & Pan">
+                <svg class="reset-zoom-icon" viewBox="0 0 16 16" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                  <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                </svg>
+                <span>Reset Zoom</span>
+              </button>
+            </div>
+          </div>
+          <div class="chart-header-right">
+            <div class="legend-indicator">
+              <span class="legend-line line-slate"></span>
+              <span class="legend-text">1M Historical Trend</span>
+              <span class="legend-line line-cyan"></span>
+              <span class="legend-text">Live Stream</span>
+              <span class="legend-line line-projection"></span>
+              <span class="legend-text">Future Projection</span>
+              <span class="legend-line line-dashed-cyan"></span>
+              <span class="legend-text">Session Mean</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container-price">
+          <canvas id="priceChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Right 35%: Predicted Return Bar Chart -->
+      <div class="card chart-card return-chart-panel">
+        <div class="corner-bracket cb-tl"></div>
+        <div class="corner-bracket cb-tr"></div>
+        <div class="chart-header">
+          <div class="chart-title-wrap">
+            <span class="model-dot-mini"></span>
+            <h2 id="returnChartTitle">Apple Predicted Return (%)</h2>
+          </div>
+          <div class="return-scale-info mono">Next-Horizon &plusmn;%</div>
+        </div>
+        <div class="chart-container-return">
+          <canvas id="returnChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Deep-Data Intel Arrays & News Feed (55% / 45% Split) -->
+    <section class="bottom-intelligence-grid">
+      
+      <!-- Left 55%: Interactive Matrix Watchlist -->
+      <div class="card table-card watchlist-panel">
+        <div class="corner-bracket cb-tl"></div>
+        <div class="corner-bracket cb-tr"></div>
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <h2>Multi-Asset Watchlist Matrix</h2>
+            <span class="header-hint">Institutional Analytics • Click row to switch asset</span>
+          </div>
+          <div class="panel-header-right">
+            <span class="matrix-pill mono">5 ASSETS MONITORED</span>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="terminal-table" id="watchlistTable">
+            <thead>
+              <tr>
+                <th class="th-symbol">ASSET</th>
+                <th class="th-price">PRICE ($)</th>
+                <th class="th-spark">TRAJECTORY</th>
+                <th class="th-vol">VOLATILITY</th>
+                <th class="th-sent">SENTIMENT</th>
+                <th class="th-pred">PRED RET %</th>
+                <th class="th-dir">SIGNAL</th>
+              </tr>
+            </thead>
+            <tbody id="assetsTableBody">
+              <!-- Dynamically populated rows with full company names, tickers, sparklines and click handlers -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right 45%: Live Financial News & Sentiment Feed -->
+      <div class="card news-card news-panel">
+        <div class="corner-bracket cb-tl"></div>
+        <div class="corner-bracket cb-tr"></div>
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <h2>Live Financial News & Sentiment Feed</h2>
+            <span class="header-hint">Real-time Market & Corporate News</span>
+          </div>
+          <div class="panel-header-right">
+            <span class="nlp-stream-badge mono">FEED ACTIVE</span>
+          </div>
+        </div>
+        <div id="newsFeed" class="news-feed-container">
+          <!-- Dynamically populated infinite scrolling card deck -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+﻿# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*.class
+.venv/
+venv/
+env/
+
+# Environment & Local Secrets
+.env
+*.pem
+*.key
+
+# Spark, Kafka & Streaming Checkpoints
+checkpoints/
+spark-warehouse/
+derby.log
+metastore_db/
+kafka-logs/
+logs/
+*.log
+
+# IDE & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

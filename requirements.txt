@@ -1,0 +1,7 @@
+kafka-python
+yfinance
+requests
+python-dotenv
+pyspark==3.5.8
+vaderSentiment
+pymongo
